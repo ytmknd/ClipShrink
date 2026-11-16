@@ -1,0 +1,26 @@
+# Build output
+bin/
+obj/
+app/
+portable/
+
+# Bundled FFmpeg binary (~220 MB, GPLv3) - place it locally, see README
+tools/ffmpeg.exe
+
+# Video files used for testing
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.m4v
+*.mkv
+*.webm
+*.avi
+
+# IDE / OS
+.vs/
+.vscode/
+*.user
+*.suo
+Thumbs.db
+desktop.ini

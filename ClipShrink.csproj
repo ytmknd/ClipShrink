@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>ClipShrink</AssemblyName>
+    <RootNamespace>ClipShrink</RootNamespace>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationVisualStyles>true</ApplicationVisualStyles>
+    <ApplicationUseCompatibleTextRendering>false</ApplicationUseCompatibleTextRendering>
+    <AssemblyTitle>ClipShrink</AssemblyTitle>
+    <Product>ClipShrink</Product>
+    <Version>1.0.0</Version>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- 発行フォルダーに不要な .xml / .pdb を出さない -->
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+    <DebugType Condition="'$(Configuration)' == 'Release'">none</DebugType>
+    <!-- ffmpeg.exe (約 220MB) を出力先ごとに複製しないよう、同じドライブならハードリンクで配置する -->
+    <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
+    <CreateHardLinksForAdditionalFilesIfPossible>true</CreateHardLinksForAdditionalFilesIfPossible>
+    <CreateHardLinksForPublishFilesIfPossible>true</CreateHardLinksForPublishFilesIfPossible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+  </ItemGroup>
+
+  <!-- ffmpeg.exe を EXE と同じフォルダーに同梱する（単一 EXE には埋め込まない） -->
+  <ItemGroup>
+    <None Include="tools\ffmpeg.exe" Link="ffmpeg.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </None>
+    <None Include="LICENSE">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </None>
+    <None Include="THIRD_PARTY_NOTICES.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </None>
+  </ItemGroup>
+
+  <!-- WinForms では WebView2 の WPF 用アセンブリは不要（WindowsBase の競合警告を防ぐ） -->
+  <Target Name="RemoveWebView2Wpf" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="'%(Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
+
+</Project>
