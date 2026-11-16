@@ -27,6 +27,8 @@
 }
 
 * { box-sizing: border-box; }
+/* display を指定した要素でも hidden 属性で確実に隠す（動画の上の膜が常に残って暗くなる不具合の対策） */
+[hidden] { display: none !important; }
 body {
   margin: 0;
   background: var(--bg);
