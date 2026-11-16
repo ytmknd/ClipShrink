@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ClipShrink Web</title>
+  <meta name="description" content="動画の前後をトリムして小さな MP4 に書き出すブラウザーアプリ。動画はアップロードされず、端末の中だけで処理します。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M9 10h14v12H9z' fill='none' stroke='white' stroke-width='2.4'/%3E%3Cpath d='M14 13l5 3-5 3z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>ClipShrink <span class="tag">Web</span></h1>
+    <p class="lead">動画の前後をカットして、小さな MP4 で保存します。動画はアップロードされず、この端末の中だけで処理されます。</p>
+  </header>
+
+  <main>
+    <div id="unsupported" class="notice error" hidden>
+      このブラウザーは動画の変換機能（WebCodecs）に対応していません。最新の Chrome または Edge でお試しください。
+    </div>
+
+    <!-- ファイル選択 -->
+    <section id="drop" class="drop" tabindex="0">
+      <input id="file" type="file" accept="video/*,.mp4,.mov,.m4v,.mkv,.webm" hidden>
+      <div class="drop-inner">
+        <strong>動画をここにドラッグ＆ドロップ</strong>
+        <span>または</span>
+        <button id="pick" type="button" class="btn primary">動画を選ぶ</button>
+        <small>MP4 / MOV / M4V / MKV / WebM（iPhone の画面録画も可）</small>
+      </div>
+    </section>
+
+    <section id="editor" hidden>
+      <div class="fileinfo">
+        <div><strong id="fileName"></strong></div>
+        <div id="fileMeta" class="muted"></div>
+        <button id="change" type="button" class="btn small">別の動画を開く</button>
+      </div>
+
+      <!-- プレビュー -->
+      <div class="preview">
+        <div class="player">
+          <div class="video-wrap">
+            <video id="video" controls playsinline preload="auto"></video>
+            <div id="videoMsg" class="video-msg" hidden></div>
+          </div>
+          <div class="player-bar">
+            <button id="playRange" type="button" class="btn">▶ 範囲を再生</button>
+            <button id="stop" type="button" class="btn">■ 停止</button>
+            <button id="setStart" type="button" class="btn">この位置を開始に</button>
+            <button id="setEnd" type="button" class="btn">この位置を終了に</button>
+            <span id="playerTime" class="muted mono"></span>
+          </div>
+        </div>
+        <div class="frames">
+          <figure>
+            <figcaption>開始位置 <span id="capStart" class="mono"></span></figcaption>
+            <canvas id="thumbStart"></canvas>
+          </figure>
+          <figure>
+            <figcaption>終了位置 <span id="capEnd" class="mono"></span></figcaption>
+            <canvas id="thumbEnd"></canvas>
+          </figure>
+        </div>
+      </div>
+
+      <!-- トリム -->
+      <fieldset class="card">
+        <legend>トリム（前後のカット）</legend>
+        <div class="trim-row">
+          <label for="rangeStart">開始</label>
+          <input id="rangeStart" type="range" min="0" step="0.01">
+          <input id="timeStart" type="text" class="time mono" inputmode="decimal" aria-label="開始時刻">
+          <button type="button" class="btn small" data-nudge="start" data-d="-0.1">◀ 0.1秒</button>
+          <button type="button" class="btn small" data-nudge="start" data-d="0.1">0.1秒 ▶</button>
+        </div>
+        <div class="trim-row">
+          <label for="rangeEnd">終了</label>
+          <input id="rangeEnd" type="range" min="0" step="0.01">
+          <input id="timeEnd" type="text" class="time mono" inputmode="decimal" aria-label="終了時刻">
+          <button type="button" class="btn small" data-nudge="end" data-d="-0.1">◀ 0.1秒</button>
+          <button type="button" class="btn small" data-nudge="end" data-d="0.1">0.1秒 ▶</button>
+        </div>
+        <p class="length">切り出す長さ: <strong id="lengthText" class="mono"></strong></p>
+      </fieldset>
+
+      <!-- 圧縮設定 -->
+      <fieldset class="card">
+        <legend>圧縮設定</legend>
+        <div class="grid">
+          <label class="radio"><input type="radio" name="mode" value="quality" checked> 画質で指定</label>
+          <select id="quality">
+            <option value="0.6">高画質</option>
+            <option value="0.45">標準</option>
+            <option value="0.3" selected>小さめ</option>
+            <option value="0.18">かなり小さく</option>
+            <option value="0.08">最小</option>
+          </select>
+
+          <label class="radio"><input type="radio" name="mode" value="target"> 目標サイズで指定</label>
+          <div class="inline">
+            <input id="targetMB" type="number" min="0.5" step="0.5" value="10" disabled> MB
+            <span id="targetInfo" class="muted"></span>
+          </div>
+
+          <label for="codec">コーデック</label>
+          <select id="codec">
+            <option value="avc">H.264（互換性重視）</option>
+            <option value="hevc">H.265 / HEVC（より小さい）</option>
+          </select>
+
+          <label for="resolution">解像度（短い辺）</label>
+          <select id="resolution">
+            <option value="0">元のまま</option>
+            <option value="1080">1080p</option>
+            <option value="720">720p</option>
+            <option value="540">540p</option>
+            <option value="480">480p</option>
+            <option value="360">360p</option>
+          </select>
+
+          <label for="fps">フレームレート</label>
+          <select id="fps">
+            <option value="0">元のまま</option>
+            <option value="30">30 fps</option>
+            <option value="24">24 fps</option>
+            <option value="15">15 fps</option>
+          </select>
+
+          <label for="audio">音声</label>
+          <select id="audio">
+            <option value="128000">128 kbps</option>
+            <option value="96000" selected>96 kbps</option>
+            <option value="64000">64 kbps</option>
+            <option value="0">音声なし</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <!-- 実行 -->
+      <div class="actions">
+        <button id="export" type="button" class="btn primary big">MP4 で書き出し</button>
+        <button id="sample" type="button" class="btn">圧縮プレビュー（5秒）</button>
+        <button id="cancel" type="button" class="btn" disabled>中止</button>
+      </div>
+      <div class="progress-row">
+        <progress id="progress" max="1" value="0"></progress>
+        <span id="status" class="muted"></span>
+      </div>
+      <div id="result" class="notice" hidden></div>
+    </section>
+  </main>
+
+  <dialog id="sampleDialog">
+    <form method="dialog">
+      <h2>圧縮プレビュー</h2>
+      <video id="sampleVideo" controls playsinline></video>
+      <p id="sampleInfo"></p>
+      <div class="dialog-actions"><button class="btn primary">閉じる</button></div>
+    </form>
+  </dialog>
+
+  <footer>
+    <a href="https://github.com/ytmknd/ClipShrink">GitHub</a> ·
+    MIT License · 変換ライブラリ <a href="https://mediabunny.dev/">Mediabunny</a>（MPL-2.0）
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

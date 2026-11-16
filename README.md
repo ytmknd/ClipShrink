@@ -4,6 +4,11 @@ ClipShrink is a small Windows desktop app for trimming the start and end of a vi
 
 The user interface is in Japanese.
 
+There are two editions:
+
+- **Desktop (Windows):** the WinForms app in `src/`, which bundles `ffmpeg.exe`.
+- **Web:** a static, browser-only version in [`docs/`](docs/). Nothing is uploaded. Trimming and re-encoding run on your device with WebCodecs. See [Web version](#web-version).
+
 ## Features
 
 - **Open videos** with the button or by drag and drop. MP4 is the main target, and MOV, M4V, MKV, WebM and AVI also work. You can also pass a file path as the first command-line argument.
@@ -87,6 +92,9 @@ src/
                       process execution with progress reporting
 tools/
   ffmpeg.exe          Bundled FFmpeg binary (not part of the source license)
+docs/                 Web version (GitHub Pages root)
+  index.html, style.css, app.js
+  vendor/             Mediabunny bundle + its MPL-2.0 license
 THIRD_PARTY_NOTICES.txt
 LICENSE
 ```
@@ -101,6 +109,31 @@ LICENSE
   - The source video is served through `WebResourceRequested` with byte-range support, which makes seeking work.
   - The temporary proxy and sample files go to `%TEMP%\ClipShrink_preview` and are deleted on exit and on the next start.
 
+## Web version
+
+`docs/` holds a static web app (HTML, CSS and plain JavaScript modules, with no build step). It offers the same workflow as the desktop app.
+
+- **Private by design:** the video never leaves the browser. Decoding and encoding use the browser's [WebCodecs](https://developer.mozilla.org/docs/Web/API/WebCodecs_API) API through [Mediabunny](https://mediabunny.dev/), which usually runs on the GPU and is far faster than ffmpeg.wasm.
+- **Large files:** in Chrome and Edge the output streams straight to the file you choose through the File System Access API, so even multi-GB videos do not have to fit in memory. Other browsers build the file in memory and download it.
+- **Features:** player with range playback and "set start/end here", start and end thumbnails decoded with WebCodecs (these work even when the `<video>` element cannot play the file), and a 5-second compressed preview with a size estimate.
+- **Size control:**
+  - *Quality* mode uses the browser's quality-based rate control.
+  - *Target size* mode uses constant bitrate. If the encoder overshoots the target by more than 5%, the app re-encodes automatically with a corrected bitrate, up to three attempts.
+- **Output:** H.264 or H.265 with AAC audio in MP4. Width and height are always rounded to even numbers. The resolution presets refer to the short side, so portrait phone recordings scale sensibly.
+- **Browser support:** recent Chrome or Edge is recommended. HEVC input, such as iPhone recordings, needs a browser and GPU that can decode HEVC. On Windows this usually means a GPU from the last several years.
+
+### Running locally
+
+Any static file server works. ES modules do not load from `file://`, so serve the folder over HTTP:
+
+```bash
+npx serve docs        # or: python -m http.server -d docs
+```
+
+### Hosting
+
+The folder is ready for GitHub Pages: deploy from the `main` branch with the `/docs` folder. The `.nojekyll` file is already in place. Mediabunny 1.65.1 is vendored in `docs/vendor/`, so the page needs no CDN.
+
 ## License
 
 ClipShrink's source code is released under the [MIT License](LICENSE).
@@ -108,4 +141,5 @@ ClipShrink's source code is released under the [MIT License](LICENSE).
 ### Third-party components
 
 - **FFmpeg** (`ffmpeg.exe`) is **not** covered by the MIT License. The bundled build is licensed under the **GNU GPL v3** (built with `--enable-gpl --enable-version3`). ClipShrink only runs it as a separate process and does not modify it. If you redistribute `ffmpeg.exe`, you must follow the GPL v3 terms, including saying where its source code can be obtained. See [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt).
+- **Mediabunny** (`docs/vendor/mediabunny-1.65.1.min.mjs`), used by the web version, is licensed under the **Mozilla Public License 2.0**. Its license text is in [`docs/vendor/LICENSE-mediabunny.txt`](docs/vendor/LICENSE-mediabunny.txt). The vendored file is unmodified.
 - **Microsoft Edge WebView2 SDK** (`Microsoft.Web.WebView2` NuGet package) is distributed under its own license terms. See the [package page](https://www.nuget.org/packages/Microsoft.Web.WebView2).
