@@ -6,7 +6,8 @@
   <title>ClipShrink Web</title>
   <meta name="description" content="動画の前後をトリムして小さな MP4 に書き出すブラウザーアプリ。動画はアップロードされず、端末の中だけで処理します。">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M9 10h14v12H9z' fill='none' stroke='white' stroke-width='2.4'/%3E%3Cpath d='M14 13l5 3-5 3z' fill='white'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css">
+  <!-- 更新時は ?v= を上げて、ブラウザーのキャッシュに古い版が残らないようにする -->
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header class="topbar">
@@ -165,6 +166,6 @@
     MIT License · 変換ライブラリ <a href="https://mediabunny.dev/">Mediabunny</a>（MPL-2.0）
   </footer>
 
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=3"></script>
 </body>
 </html>
