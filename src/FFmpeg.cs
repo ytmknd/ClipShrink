@@ -166,7 +166,7 @@ public static class FFmpeg
             }
         };
 
-        if (!p.Start()) return (-1, "ffmpeg を起動できませんでした");
+        if (!p.Start()) return (-1, L.T("ffmpeg を起動できませんでした", "Could not start ffmpeg"));
         p.BeginOutputReadLine();
         p.BeginErrorReadLine();
         p.StandardInput.Close();

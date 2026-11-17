@@ -1,22 +1,38 @@
+ClipShrink — Third-party notices / サードパーティ製ソフトウェアについて
+
+ClipShrink includes the following third-party software.
 ClipShrink には以下のサードパーティ製ソフトウェアが同梱されています。
 
 --------------------------------------------------------------------
-FFmpeg (ffmpeg.exe)
+FFmpeg (ffmpeg.exe) — Windows app
 --------------------------------------------------------------------
-バージョン : 8.1.1 full_build (www.gyan.dev)
-ライセンス : GNU General Public License version 3 (GPLv3)
-             （--enable-gpl --enable-version3 でビルドされています）
-入手元     : https://www.gyan.dev/ffmpeg/builds/
-ソース     : https://ffmpeg.org/download.html
-             https://github.com/FFmpeg/FFmpeg
-ライセンス全文 : https://www.gnu.org/licenses/gpl-3.0.html
+Version / バージョン : 8.1.1 full_build (www.gyan.dev)
+License / ライセンス : GNU General Public License version 3 (GPLv3)
+                       (built with --enable-gpl --enable-version3)
+Binary / 入手元      : https://www.gyan.dev/ffmpeg/builds/
+Source / ソース      : https://ffmpeg.org/download.html
+                       https://github.com/FFmpeg/FFmpeg
+License text / 全文  : https://www.gnu.org/licenses/gpl-3.0.html
+
+FFmpeg is copyright the FFmpeg developers. ClipShrink runs ffmpeg.exe as a
+separate process and does not modify it. If you redistribute ffmpeg.exe, you
+must comply with the GPLv3, including stating where its source code can be
+obtained.
 
 FFmpeg は FFmpeg developers の著作物です。ClipShrink は ffmpeg.exe を
 別プロセスとして起動して利用しており、ffmpeg.exe 自体は改変していません。
 ffmpeg.exe を再配布する場合は GPLv3 の条件（ソースコードの入手方法の提示など）に従ってください。
 
 --------------------------------------------------------------------
-Microsoft Edge WebView2 SDK
+Microsoft Edge WebView2 SDK — Windows app
 --------------------------------------------------------------------
-ライセンス : BSD-3-Clause 相当（Microsoft.Web.WebView2 NuGet パッケージ）
+License / ライセンス : BSD-3-Clause style (Microsoft.Web.WebView2 NuGet package)
 https://www.nuget.org/packages/Microsoft.Web.WebView2
+
+--------------------------------------------------------------------
+Mediabunny — Web app (docs/vendor/)
+--------------------------------------------------------------------
+Version / バージョン : 1.65.1 (unmodified / 改変なし)
+License / ライセンス : Mozilla Public License 2.0
+https://mediabunny.dev/
+License text / 全文  : docs/vendor/LICENSE-mediabunny.txt

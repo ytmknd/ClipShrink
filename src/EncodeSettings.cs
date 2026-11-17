@@ -61,7 +61,7 @@ public static class ArgumentBuilder
                 var p1 = Common(s, info, includeAudio: false);
                 p1.AddRange(VideoCodecArgs(s));
                 p1.AddRange(["-b:v", $"{vk}k", "-pass", "1", "-passlogfile", log, "-f", "null", "NUL"]);
-                passes.Add(new EncodePass("解析中 (1/2)", p1, log));
+                passes.Add(new EncodePass(L.T("解析中 (1/2)", "Analyzing (1/2)"), p1, log));
 
                 var p2 = Common(s, info, includeAudio: true);
                 p2.AddRange(VideoCodecArgs(s));
@@ -69,7 +69,7 @@ public static class ArgumentBuilder
                              "-pass", "2", "-passlogfile", log]);
                 p2.AddRange(AudioArgs(s, info));
                 p2.AddRange(Tail(s));
-                passes.Add(new EncodePass("書き出し中 (2/2)", p2, log));
+                passes.Add(new EncodePass(L.T("書き出し中 (2/2)", "Encoding (2/2)"), p2, log));
             }
             else
             {
@@ -78,7 +78,7 @@ public static class ArgumentBuilder
                 p.AddRange(["-b:v", $"{vk}k", "-maxrate", $"{(int)(vk * 1.2)}k", "-bufsize", $"{vk * 2}k"]);
                 p.AddRange(AudioArgs(s, info));
                 p.AddRange(Tail(s));
-                passes.Add(new EncodePass("書き出し中", p));
+                passes.Add(new EncodePass(L.T("書き出し中", "Encoding"), p));
             }
         }
         else
@@ -88,7 +88,7 @@ public static class ArgumentBuilder
             p.AddRange(["-crf", s.Crf.ToString(CultureInfo.InvariantCulture)]);
             p.AddRange(AudioArgs(s, info));
             p.AddRange(Tail(s));
-            passes.Add(new EncodePass("書き出し中", p));
+            passes.Add(new EncodePass(L.T("書き出し中", "Encoding"), p));
         }
         return passes;
     }

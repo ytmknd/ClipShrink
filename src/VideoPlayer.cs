@@ -15,7 +15,7 @@ public sealed class VideoPlayer : UserControl
     private readonly Label _overlay = new()
     {
         Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter,
-        ForeColor = Color.Gainsboro, BackColor = Color.Black, Text = "プレーヤーを準備しています...",
+        ForeColor = Color.Gainsboro, BackColor = Color.Black, Text = L.T("プレーヤーを準備しています...", "Preparing the player..."),
     };
     private string? _sourcePath;
     private int _sourceSerial;
@@ -68,16 +68,17 @@ public sealed class VideoPlayer : UserControl
             await tcs.Task;
 
             IsReady = true;
-            _overlay.Text = "動画を開くとここで再生できます";
+            _overlay.Text = L.T("動画を開くとここで再生できます", "Open a video to play it here");
         }
         catch (WebView2RuntimeNotFoundException)
         {
-            _overlay.Text = "プレビュー再生には Microsoft Edge WebView2 ランタイムが必要です。\n" +
-                            "（トリムと書き出しはそのまま使えます）";
+            _overlay.Text = L.T(
+                "プレビュー再生には Microsoft Edge WebView2 ランタイムが必要です。\n（トリムと書き出しはそのまま使えます）",
+                "Preview playback needs the Microsoft Edge WebView2 Runtime.\n(Trimming and export still work.)");
         }
         catch (Exception ex)
         {
-            _overlay.Text = "プレーヤーを初期化できませんでした。\n" + ex.Message;
+            _overlay.Text = L.T("プレーヤーを初期化できませんでした。\n", "Could not initialize the player.\n") + ex.Message;
         }
     }
 

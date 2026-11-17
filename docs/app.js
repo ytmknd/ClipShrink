@@ -3,6 +3,9 @@ import {
   Input, BlobSource, ALL_FORMATS, Output, Mp4OutputFormat, BufferTarget, StreamTarget,
   Conversion, CanvasSink, Quality, canEncodeVideo, canEncodeAudio, ConversionCanceledError,
 } from './vendor/mediabunny-1.65.1.min.mjs';
+import { t, applyStaticText } from './i18n.js?v=4';
+
+applyStaticText();
 
 const $ = (id) => document.getElementById(id);
 const SAMPLE_SECONDS = 5;
@@ -44,7 +47,7 @@ if (!supported) {
     if (!(await canEncodeVideo('hevc'))) {
       const opt = el.codec.querySelector('option[value="hevc"]');
       opt.disabled = true;
-      opt.textContent += '（このブラウザーでは使えません）';
+      opt.textContent += t('hevcUnavailable');
     }
     if (!(await canEncodeAudio('aac'))) state.audioCodec = 'opus';
   } catch { /* 判定できなくても続行 */ }
@@ -109,7 +112,7 @@ for (const target of [el.drop, document.body]) {
 
 async function openFile(file) {
   if (!supported) return;
-  setStatus('読み込み中...');
+  setStatus(t('loading'));
   hideResult();
 
   // 前のファイルを片付ける
@@ -119,7 +122,7 @@ async function openFile(file) {
   const input = new Input({ source: new BlobSource(file), formats: ALL_FORMATS });
   try {
     const videoTrack = await input.getPrimaryVideoTrack();
-    if (!videoTrack) throw new Error('映像が含まれていないファイルです。');
+    if (!videoTrack) throw new Error(t('noVideoTrack'));
     const audioTrack = await input.getPrimaryAudioTrack();
     const duration = await input.computeDuration();
     const canDecode = await videoTrack.canDecode();
@@ -138,13 +141,13 @@ async function openFile(file) {
 
     el.fileName.textContent = file.name;
     el.fileMeta.textContent = [
-      `長さ ${formatTime(duration)}`,
+      t('duration', { t: formatTime(duration) }),
       `${state.width}×${state.height}`,
       fps ? `${Math.abs(fps - Math.round(fps)) < 0.05 ? Math.round(fps) : fps.toFixed(2)} fps` : null,
-      videoTrack.codec ?? '不明な映像形式',
-      audioTrack ? `音声 ${audioTrack.codec ?? ''}` : '音声なし',
+      videoTrack.codec ?? t('unknownCodec'),
+      audioTrack ? t('audioCodec', { c: audioTrack.codec ?? '' }) : t('noAudio'),
       formatSize(file.size),
-    ].filter(Boolean).join('　');
+    ].filter(Boolean).join(t('sep'));
 
     el.drop.hidden = true;
     el.editor.hidden = false;
@@ -160,16 +163,13 @@ async function openFile(file) {
     updateButtons();
 
     if (!canDecode) {
-      showResult(
-        `このブラウザーでは、この動画の映像形式（${videoTrack.codec ?? '不明'}）を読み込めないため書き出しできません。\n` +
-        '最新の Chrome / Edge でお試しください。HEVC（iPhone の動画）は、Windows では GPU の HEVC 対応が必要です。',
-        'error');
+      showResult(t('cannotDecode', { c: videoTrack.codec ?? t('unknown') }), 'error');
     }
     setStatus('');
   } catch (err) {
     input.dispose?.();
     setStatus('');
-    showResult('動画を読み込めませんでした。\n' + (err?.message ?? err), 'error');
+    showResult(t('loadFailed', { e: err?.message ?? err }), 'error');
   }
 }
 
@@ -179,14 +179,12 @@ el.video.addEventListener('error', () => {
   if (!el.video.getAttribute('src')) return;
   state.videoPlayable = false;
   el.videoMsg.hidden = false;
-  el.videoMsg.textContent = state.canDecode
-    ? 'このブラウザーではこの動画をそのまま再生できません。\n右側の静止画で位置を確認できます。書き出しは行えます。'
-    : 'このブラウザーではこの動画を再生できません。';
+  el.videoMsg.textContent = state.canDecode ? t('cannotPlayButDecode') : t('cannotPlay');
   updateButtons();
 });
 
 el.video.addEventListener('timeupdate', () => {
-  el.playerTime.textContent = `再生位置 ${formatTime(el.video.currentTime)}`;
+  el.playerTime.textContent = t('position', { t: formatTime(el.video.currentTime) });
 });
 
 function tick() {
@@ -250,7 +248,7 @@ function syncTrimUi() {
   el.timeEnd.value = formatTime(state.end);
   el.capStart.textContent = formatTime(state.start);
   el.capEnd.textContent = formatTime(state.end);
-  el.lengthText.textContent = `${formatTime(state.end - state.start)}（元の長さ ${formatTime(state.duration)}）`;
+  el.lengthText.textContent = t('lengthValue', { len: formatTime(state.end - state.start), orig: formatTime(state.duration) });
   updateTargetInfo();
 }
 
@@ -330,7 +328,7 @@ function targetVideoBps(length) {
 function updateTargetInfo() {
   if (mode() !== 'target' || !state.file) { el.targetInfo.textContent = ''; return; }
   const kbps = Math.round(targetVideoBps(state.end - state.start) / 1000);
-  el.targetInfo.textContent = `→ 映像 約 ${kbps} kbps` + (kbps < 150 ? '（かなり粗くなります。解像度を下げるのがおすすめ）' : '');
+  el.targetInfo.textContent = t('targetInfo', { kbps }) + (kbps < 150 ? t('targetLow') : '');
 }
 
 /**
@@ -373,9 +371,9 @@ function outputSize() {
 }
 
 const DISCARD_REASONS = {
-  undecodable_source_codec: 'このブラウザーでは元の動画の形式を読み込めません',
-  no_encodable_target_codec: 'このブラウザーでは指定のコーデックで書き出せません',
-  unknown_source_codec: '元の動画の形式が不明です',
+  undecodable_source_codec: 'reasonUndecodable',
+  no_encodable_target_codec: 'reasonNoEncoder',
+  unknown_source_codec: 'reasonUnknownSource',
 };
 
 async function convert(start, end, fullLength, target, onProgress, videoBps) {
@@ -390,7 +388,8 @@ async function convert(start, end, fullLength, target, onProgress, videoBps) {
   const lostVideo = conversion.discardedTracks.find((d) => d.track.type === 'video');
   if (!conversion.isValid || lostVideo) {
     const reason = lostVideo ?? conversion.discardedTracks[0];
-    throw new Error(DISCARD_REASONS[reason?.reason] ?? `変換できません（${reason?.reason ?? '不明な理由'}）`);
+    const key = DISCARD_REASONS[reason?.reason];
+    throw new Error(key ? t(key) : t('reasonOther', { r: reason?.reason ?? t('reasonUnknown') }));
   }
   const lostAudio = conversion.discardedTracks.find((d) => d.track.type === 'audio' && d.reason !== 'discarded_by_user');
 
@@ -422,7 +421,7 @@ el.exportBtn.addEventListener('click', async () => {
     try {
       handle = await window.showSaveFilePicker({
         suggestedName,
-        types: [{ description: 'MP4 動画', accept: { 'video/mp4': ['.mp4'] } }],
+        types: [{ description: t('mp4Video'), accept: { 'video/mp4': ['.mp4'] } }],
       });
     } catch (err) {
       if (err?.name === 'AbortError') return; // 保存ダイアログでキャンセル
@@ -458,10 +457,10 @@ el.exportBtn.addEventListener('click', async () => {
     let target, outBytes, lostAudio;
     for (let attempt = 1; ; attempt++) {
       target = await makeTarget();
-      const label = attempt === 1 ? '書き出し中' : `目標サイズに合わせて再調整中（${attempt}/${MAX_ATTEMPTS}）`;
+      const label = attempt === 1 ? t('encoding') : t('readjusting', { n: attempt, max: MAX_ATTEMPTS });
       ({ lostAudio } = await convert(state.start, state.end, length, target, (p) => {
         el.progress.value = p;
-        setStatus(`${label}... ${Math.round(p * 100)}%`);
+        setStatus(t('progress', { label, pct: Math.round(p * 100) }));
       }, bps));
       outBytes = handle ? (await handle.getFile()).size : target.buffer.byteLength;
 
@@ -475,25 +474,23 @@ el.exportBtn.addEventListener('click', async () => {
 
     el.progress.value = 1;
     const secs = ((performance.now() - started) / 1000).toFixed(1);
-    setStatus(`完了（${secs} 秒）`);
+    setStatus(t('done', { s: secs }));
     const ratio = (outBytes / state.file.size) * 100;
-    let msg = `書き出しが完了しました${handle ? `：${handle.name}` : '（ダウンロードフォルダーに保存）'}\n` +
-      `元の動画: ${formatSize(state.file.size)}　→　書き出し: ${formatSize(outBytes)}（元の ${ratio.toFixed(1)}%）`;
-    if (lostAudio) msg += '\n※ 音声はこのブラウザーで変換できなかったため含まれていません。';
-    if (isTarget && outBytes > goalBytes * 1.05) {
-      msg += `\n※ 目標の ${formatSize(goalBytes)} まで小さくできませんでした。解像度やフレームレートを下げてください。`;
-    }
-    if (outBytes >= state.file.size) msg += '\n※ 元の動画より大きくなりました。画質を下げるか、解像度を下げてください。';
+    let msg = (handle ? t('exportDoneFile', { name: handle.name }) : t('exportDoneDownload')) + '\n' +
+      t('sizeCompare', { in: formatSize(state.file.size), out: formatSize(outBytes), ratio: ratio.toFixed(1) });
+    if (lostAudio) msg += '\n' + t('lostAudio');
+    if (isTarget && outBytes > goalBytes * 1.05) msg += '\n' + t('targetMissed', { goal: formatSize(goalBytes) });
+    if (outBytes >= state.file.size) msg += '\n' + t('larger');
     showResult(msg, outBytes >= state.file.size ? 'error' : 'ok');
   } catch (err) {
     canceled = true;
     try { await fileWritable?.abort(); } catch { /* 既に閉じている */ }
     el.progress.value = 0;
     if (err instanceof ConversionCanceledError) {
-      setStatus('中止しました');
+      setStatus(t('canceled'));
     } else {
-      setStatus('失敗しました');
-      showResult('書き出しに失敗しました。\n' + (err?.message ?? err), 'error');
+      setStatus(t('failed'));
+      showResult(t('exportFailed', { e: err?.message ?? err }), 'error');
     }
   } finally {
     wakeLock?.release?.().catch(() => {});
@@ -525,10 +522,10 @@ el.sampleBtn.addEventListener('click', async () => {
   try {
     await convert(start, end, state.end - state.start, target, (p) => {
       el.progress.value = p;
-      setStatus(`圧縮プレビュー作成中... ${Math.round(p * 100)}%`);
+      setStatus(t('sampleProgress', { pct: Math.round(p * 100) }));
     });
     el.progress.value = 1;
-    setStatus('圧縮プレビュー作成完了');
+    setStatus(t('sampleReady'));
 
     const blob = new Blob([target.buffer], { type: 'video/mp4' });
     const fullLength = state.end - state.start;
@@ -539,14 +536,15 @@ el.sampleBtn.addEventListener('click', async () => {
     if (state.sampleUrl) URL.revokeObjectURL(state.sampleUrl);
     state.sampleUrl = URL.createObjectURL(blob);
     el.sampleVideo.src = state.sampleUrl;
-    el.sampleInfo.textContent =
-      `${(end - start).toFixed(1)} 秒で ${formatSize(blob.size)}　→　全体（${formatTime(fullLength)}）の推定 約 ${formatSize(estimate)}`;
+    el.sampleInfo.textContent = t('sampleInfo', {
+      secs: (end - start).toFixed(1), size: formatSize(blob.size), len: formatTime(fullLength), est: formatSize(estimate),
+    });
     el.sampleDialog.showModal();
     el.sampleVideo.play().catch(() => {});
   } catch (err) {
     el.progress.value = 0;
-    if (err instanceof ConversionCanceledError) setStatus('中止しました');
-    else { setStatus('失敗しました'); showResult('圧縮プレビューを作れませんでした。\n' + (err?.message ?? err), 'error'); }
+    if (err instanceof ConversionCanceledError) setStatus(t('canceled'));
+    else { setStatus(t('failed')); showResult(t('sampleFailed', { e: err?.message ?? err }), 'error'); }
   } finally {
     setBusy(false);
   }
@@ -556,7 +554,7 @@ el.sampleDialog.addEventListener('close', () => el.sampleVideo.pause());
 
 el.sampleVideo.addEventListener('error', () => {
   if (el.sampleVideo.getAttribute('src')) {
-    el.sampleInfo.textContent += '\nこの圧縮プレビューはこのブラウザーで再生できません（H.265 の場合は H.264 にすると確認できます）。';
+    el.sampleInfo.textContent += '\n' + t('sampleCannotPlay');
   }
 });
 

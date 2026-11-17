@@ -27,29 +27,29 @@ public sealed class MainForm : Form
 
     // プレーヤー
     private readonly VideoPlayer _player = new() { Dock = DockStyle.Fill, Margin = new Padding(4) };
-    private readonly Button _btnPlayRange = new() { Text = "▶ 範囲を再生", AutoSize = true };
-    private readonly Button _btnStopPlay = new() { Text = "■ 停止", AutoSize = true };
-    private readonly Button _btnSetStartHere = new() { Text = "この位置を開始に", AutoSize = true };
-    private readonly Button _btnSetEndHere = new() { Text = "この位置を終了に", AutoSize = true };
-    private readonly Button _btnSamplePreview = new() { Text = $"圧縮プレビュー（{SampleSeconds:0}秒）", AutoSize = true };
+    private readonly Button _btnPlayRange = new() { Text = L.T("▶ 範囲を再生", "▶ Play range"), AutoSize = true };
+    private readonly Button _btnStopPlay = new() { Text = L.T("■ 停止", "■ Stop"), AutoSize = true };
+    private readonly Button _btnSetStartHere = new() { Text = L.T("この位置を開始に", "Set start here"), AutoSize = true };
+    private readonly Button _btnSetEndHere = new() { Text = L.T("この位置を終了に", "Set end here"), AutoSize = true };
+    private readonly Button _btnSamplePreview = new() { Text = L.T($"圧縮プレビュー（{SampleSeconds:0}秒）", $"Compressed preview ({SampleSeconds:0}s)"), AutoSize = true };
     private readonly Label _lblPlayer = new() { AutoSize = true, Margin = new Padding(6, 8, 3, 0) };
 
     // UI
-    private readonly Button _btnOpen = new() { Text = "動画を開く...", AutoSize = true };
+    private readonly Button _btnOpen = new() { Text = L.T("動画を開く...", "Open video..."), AutoSize = true };
     private readonly TextBox _txtInput = new() { ReadOnly = true, Dock = DockStyle.Fill };
-    private readonly Label _lblInfo = new() { AutoSize = true, Text = "MP4 ファイルを開くか、ウィンドウにドラッグ＆ドロップしてください。" };
+    private readonly Label _lblInfo = new() { AutoSize = true, Text = L.T("MP4 ファイルを開くか、ウィンドウにドラッグ＆ドロップしてください。", "Open an MP4 file, or drag and drop it onto this window.") };
     private readonly PictureBox _picStart = NewPreviewBox();
     private readonly PictureBox _picEnd = NewPreviewBox();
-    private readonly Label _lblPicStart = new() { AutoSize = true, Text = "開始位置" };
-    private readonly Label _lblPicEnd = new() { AutoSize = true, Text = "終了位置" };
+    private readonly Label _lblPicStart = new() { AutoSize = true, Text = L.T("開始位置", "Start") };
+    private readonly Label _lblPicEnd = new() { AutoSize = true, Text = L.T("終了位置", "End") };
     private readonly TrackBar _trkStart = NewTrack();
     private readonly TrackBar _trkEnd = NewTrack();
     private readonly TextBox _txtStart = new() { Width = 110, TextAlign = HorizontalAlignment.Center };
     private readonly TextBox _txtEnd = new() { Width = 110, TextAlign = HorizontalAlignment.Center };
-    private readonly Label _lblLength = new() { AutoSize = true, Font = new Font("Yu Gothic UI", 10f, FontStyle.Bold) };
+    private readonly Label _lblLength = new() { AutoSize = true, Font = new Font(L.FontName, 10f, FontStyle.Bold) };
 
-    private readonly RadioButton _rdoQuality = new() { Text = "画質で指定", AutoSize = true, Checked = true };
-    private readonly RadioButton _rdoTarget = new() { Text = "目標サイズで指定", AutoSize = true };
+    private readonly RadioButton _rdoQuality = new() { Text = L.T("画質で指定", "By quality"), AutoSize = true, Checked = true };
+    private readonly RadioButton _rdoTarget = new() { Text = L.T("目標サイズで指定", "By target size"), AutoSize = true };
     private readonly ComboBox _cmbQuality = NewCombo();
     private readonly NumericUpDown _numTarget = new() { Minimum = 0.5m, Maximum = 100000, DecimalPlaces = 1, Increment = 1, Value = 10, Width = 90 };
     private readonly Label _lblTargetInfo = new() { AutoSize = true, ForeColor = SystemColors.GrayText };
@@ -60,30 +60,31 @@ public sealed class MainForm : Form
     private readonly ComboBox _cmbPreset = NewCombo();
 
     private readonly TextBox _txtOutput = new() { Dock = DockStyle.Fill };
-    private readonly Button _btnBrowse = new() { Text = "参照...", AutoSize = true };
-    private readonly Button _btnExport = new() { Text = "書き出し", AutoSize = true, Font = new Font("Yu Gothic UI", 10f, FontStyle.Bold), Padding = new Padding(12, 2, 12, 2) };
-    private readonly Button _btnCancel = new() { Text = "中止", AutoSize = true, Enabled = false };
+    private readonly Button _btnBrowse = new() { Text = L.T("参照...", "Browse..."), AutoSize = true };
+    private readonly Button _btnExport = new() { Text = L.T("書き出し", "Export"), AutoSize = true, Font = new Font(L.FontName, 10f, FontStyle.Bold), Padding = new Padding(12, 2, 12, 2) };
+    private readonly Button _btnCancel = new() { Text = L.T("中止", "Cancel"), AutoSize = true, Enabled = false };
     private readonly ProgressBar _progress = new() { Dock = DockStyle.Fill, Maximum = 1000 };
     private readonly Label _lblStatus = new() { AutoSize = true, Text = "" };
 
     private readonly (string Label, int Crf)[] _qualities =
     [
-        ("高画質（CRF 23）", 23), ("標準（CRF 26）", 26), ("小さめ（CRF 28）", 28),
-        ("かなり小さく（CRF 31）", 31), ("最小（CRF 35）", 35),
+        (L.T("高画質（CRF 23）", "High quality (CRF 23)"), 23), (L.T("標準（CRF 26）", "Standard (CRF 26)"), 26),
+        (L.T("小さめ（CRF 28）", "Smaller (CRF 28)"), 28), (L.T("かなり小さく（CRF 31）", "Much smaller (CRF 31)"), 31),
+        (L.T("最小（CRF 35）", "Smallest (CRF 35)"), 35),
     ];
     private readonly (string Label, int Height)[] _resolutions =
     [
-        ("元のまま", 0), ("1080p", 1080), ("720p", 720), ("540p", 540), ("480p", 480), ("360p", 360),
+        (L.T("元のまま", "Original"), 0), ("1080p", 1080), ("720p", 720), ("540p", 540), ("480p", 480), ("360p", 360),
     ];
-    private readonly (string Label, double Fps)[] _fpsList = [("元のまま", 0), ("30 fps", 30), ("24 fps", 24), ("15 fps", 15)];
-    private readonly (string Label, int Kbps)[] _audios = [("128 kbps", 128), ("96 kbps", 96), ("64 kbps", 64), ("音声なし", 0)];
+    private readonly (string Label, double Fps)[] _fpsList = [(L.T("元のまま", "Original"), 0), ("30 fps", 30), ("24 fps", 24), ("15 fps", 15)];
+    private readonly (string Label, int Kbps)[] _audios = [("128 kbps", 128), ("96 kbps", 96), ("64 kbps", 64), (L.T("音声なし", "No audio"), 0)];
     private readonly (string Label, string Preset)[] _presets =
-        [("速い", "veryfast"), ("標準", "medium"), ("高圧縮（遅い）", "slow")];
+        [(L.T("速い", "Fast"), "veryfast"), (L.T("標準", "Standard"), "medium"), (L.T("高圧縮（遅い）", "Best compression (slow)"), "slow")];
 
     public MainForm(string[] args)
     {
-        Text = "ClipShrink - MP4 トリム＆圧縮";
-        Font = new Font("Yu Gothic UI", 9f);
+        Text = L.T("ClipShrink - MP4 トリム＆圧縮", "ClipShrink - MP4 Trim & Compress");
+        Font = new Font(L.FontName, 9f);
         AutoScaleMode = AutoScaleMode.Dpi;
         StartPosition = FormStartPosition.CenterScreen;
         var wa = Screen.PrimaryScreen?.WorkingArea ?? new Rectangle(0, 0, 1280, 960);
@@ -102,7 +103,7 @@ public sealed class MainForm : Form
 
         foreach (var q in _qualities) _cmbQuality.Items.Add(q.Label);
         _cmbQuality.SelectedIndex = 2;
-        _cmbCodec.Items.AddRange(["H.264（互換性重視）", "H.265 / HEVC（より小さい）"]);
+        _cmbCodec.Items.AddRange([L.T("H.264（互換性重視）", "H.264 (most compatible)"), L.T("H.265 / HEVC（より小さい）", "H.265 / HEVC (smaller)")]);
         _cmbCodec.SelectedIndex = 0;
         foreach (var r in _resolutions) _cmbResolution.Items.Add(r.Label);
         _cmbResolution.SelectedIndex = 0;
@@ -133,7 +134,9 @@ public sealed class MainForm : Form
         {
             if (!File.Exists(_ffmpeg))
             {
-                MessageBox.Show(this, $"ffmpeg.exe が見つかりません。\n{_ffmpeg}\n\nClipShrink.exe と同じフォルダーに ffmpeg.exe を置いてから起動してください。",
+                MessageBox.Show(this, L.T(
+                    $"ffmpeg.exe が見つかりません。\n{_ffmpeg}\n\nClipShrink.exe と同じフォルダーに ffmpeg.exe を置いてから起動してください。",
+                    $"ffmpeg.exe was not found.\n{_ffmpeg}\n\nPut ffmpeg.exe in the same folder as ClipShrink.exe and start the app again."),
                     Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 _btnOpen.Enabled = false;
                 return;
@@ -195,8 +198,10 @@ public sealed class MainForm : Form
 
         var playerPane = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3, Margin = Padding.Empty };
         playerPane.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        playerPane.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
-        playerPane.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
+        // 固定の高さは DPI に合わせて拡大する（高 DPI でボタンが切れないように）
+        float dpi = DeviceDpi / 96f;
+        playerPane.RowStyles.Add(new RowStyle(SizeType.Absolute, 42 * dpi));
+        playerPane.RowStyles.Add(new RowStyle(SizeType.Absolute, 26 * dpi));
         playerPane.Controls.Add(_player, 0, 0);
         var playerBar = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = false, Margin = Padding.Empty };
         playerBar.Controls.AddRange([_btnPlayRange, _btnStopPlay, _btnSetStartHere, _btnSetEndHere, _btnSamplePreview]);
@@ -221,15 +226,15 @@ public sealed class MainForm : Form
         root.Controls.Add(preview);
 
         // トリム
-        var trim = new GroupBox { Text = "トリム（前後のカット）", Dock = DockStyle.Fill, AutoSize = true, Padding = new Padding(8) };
+        var trim = new GroupBox { Text = L.T("トリム（前後のカット）", "Trim (cut start and end)"), Dock = DockStyle.Fill, AutoSize = true, Padding = new Padding(8) };
         var tt = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 5, AutoSize = true };
         tt.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         tt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         tt.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         tt.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         tt.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        AddTrimRow(tt, 0, "開始", _trkStart, _txtStart, isEnd: false);
-        AddTrimRow(tt, 1, "終了", _trkEnd, _txtEnd, isEnd: true);
+        AddTrimRow(tt, 0, L.T("開始", "Start"), _trkStart, _txtStart, isEnd: false);
+        AddTrimRow(tt, 1, L.T("終了", "End"), _trkEnd, _txtEnd, isEnd: true);
         _lblLength.Margin = new Padding(3, 6, 3, 0);
         tt.Controls.Add(_lblLength, 0, 2);
         tt.SetColumnSpan(_lblLength, 5);
@@ -237,7 +242,7 @@ public sealed class MainForm : Form
         root.Controls.Add(trim);
 
         // 圧縮設定
-        var comp = new GroupBox { Text = "圧縮設定", Dock = DockStyle.Fill, AutoSize = true, Padding = new Padding(8) };
+        var comp = new GroupBox { Text = L.T("圧縮設定", "Compression"), Dock = DockStyle.Fill, AutoSize = true, Padding = new Padding(8) };
         var ct = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, AutoSize = true };
         ct.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         ct.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
@@ -252,11 +257,11 @@ public sealed class MainForm : Form
 
         ct.Controls.Add(_rdoQuality, 0, 0); ct.Controls.Add(_cmbQuality, 1, 0);
         ct.Controls.Add(_rdoTarget, 2, 0); ct.Controls.Add(targetPanel, 3, 0);
-        ct.Controls.Add(Caption("コーデック"), 0, 1); ct.Controls.Add(_cmbCodec, 1, 1);
-        ct.Controls.Add(Caption("解像度"), 2, 1); ct.Controls.Add(_cmbResolution, 3, 1);
-        ct.Controls.Add(Caption("フレームレート"), 0, 2); ct.Controls.Add(_cmbFps, 1, 2);
-        ct.Controls.Add(Caption("音声"), 2, 2); ct.Controls.Add(_cmbAudio, 3, 2);
-        ct.Controls.Add(Caption("エンコード速度"), 0, 3); ct.Controls.Add(_cmbPreset, 1, 3);
+        ct.Controls.Add(Caption(L.T("コーデック", "Codec")), 0, 1); ct.Controls.Add(_cmbCodec, 1, 1);
+        ct.Controls.Add(Caption(L.T("解像度", "Resolution")), 2, 1); ct.Controls.Add(_cmbResolution, 3, 1);
+        ct.Controls.Add(Caption(L.T("フレームレート", "Frame rate")), 0, 2); ct.Controls.Add(_cmbFps, 1, 2);
+        ct.Controls.Add(Caption(L.T("音声", "Audio")), 2, 2); ct.Controls.Add(_cmbAudio, 3, 2);
+        ct.Controls.Add(Caption(L.T("エンコード速度", "Encoder speed")), 0, 3); ct.Controls.Add(_cmbPreset, 1, 3);
         comp.Controls.Add(ct);
         root.Controls.Add(comp);
 
@@ -265,7 +270,7 @@ public sealed class MainForm : Form
         outRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         outRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         outRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        outRow.Controls.Add(Caption("保存先"), 0, 0);
+        outRow.Controls.Add(Caption(L.T("保存先", "Save to")), 0, 0);
         _txtOutput.Margin = new Padding(3, 5, 3, 3);
         outRow.Controls.Add(_txtOutput, 1, 0);
         outRow.Controls.Add(_btnBrowse, 2, 0);
@@ -297,8 +302,8 @@ public sealed class MainForm : Form
         txt.Margin = new Padding(3, 6, 3, 3);
         t.Controls.Add(txt, 2, row);
 
-        var back = new Button { Text = "◀ 0.1秒", AutoSize = true };
-        var fwd = new Button { Text = "0.1秒 ▶", AutoSize = true };
+        var back = new Button { Text = L.T("◀ 0.1秒", "◀ 0.1s"), AutoSize = true };
+        var fwd = new Button { Text = L.T("0.1秒 ▶", "0.1s ▶"), AutoSize = true };
         back.Click += (_, _) => Nudge(isEnd, -0.1);
         fwd.Click += (_, _) => Nudge(isEnd, +0.1);
         t.Controls.Add(back, 3, row);
@@ -313,8 +318,8 @@ public sealed class MainForm : Form
         {
             using var dlg = new OpenFileDialog
             {
-                Filter = "動画ファイル|*.mp4;*.m4v;*.mov;*.mkv;*.webm;*.avi|すべてのファイル|*.*",
-                Title = "トリムする動画を選択",
+                Filter = L.T("動画ファイル", "Video files") + "|*.mp4;*.m4v;*.mov;*.mkv;*.webm;*.avi|" + L.T("すべてのファイル", "All files") + "|*.*",
+                Title = L.T("トリムする動画を選択", "Select a video to trim"),
             };
             if (dlg.ShowDialog(this) == DialogResult.OK) await OpenFileAsync(dlg.FileName);
         };
@@ -344,7 +349,7 @@ public sealed class MainForm : Form
         {
             using var dlg = new SaveFileDialog
             {
-                Filter = "MP4 動画|*.mp4",
+                Filter = L.T("MP4 動画", "MP4 video") + "|*.mp4",
                 DefaultExt = "mp4",
                 FileName = Path.GetFileName(_txtOutput.Text),
                 InitialDirectory = SafeDir(_txtOutput.Text),
@@ -374,7 +379,7 @@ public sealed class MainForm : Form
         _player.TimeChanged += t =>
         {
             if (_sampleMode) return;
-            _lblPlayer.Text = $"再生位置 {FormatTime(t)}";
+            _lblPlayer.Text = L.T("再生位置 ", "Position ") + FormatTime(t);
         };
         _player.PlaybackError += async detail => await OnPlaybackErrorAsync(detail);
 
@@ -384,7 +389,7 @@ public sealed class MainForm : Form
         FormClosing += (_, e) =>
         {
             if (!_busy) return;
-            var r = MessageBox.Show(this, "書き出し中です。中止して終了しますか？", Text,
+            var r = MessageBox.Show(this, L.T("書き出し中です。中止して終了しますか？", "An export is in progress. Cancel it and quit?"), Text,
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (r == DialogResult.Yes) _encodeCts?.Cancel();
             else e.Cancel = true;
@@ -402,19 +407,19 @@ public sealed class MainForm : Form
     private async Task OpenFileAsync(string path)
     {
         if (_busy) return;
-        _lblInfo.Text = "読み込み中...";
+        _lblInfo.Text = L.T("読み込み中...", "Loading...");
         MediaInfo info;
         try { info = await FFmpeg.ProbeAsync(_ffmpeg, path); }
         catch (Exception ex)
         {
-            _lblInfo.Text = "読み込みに失敗しました: " + ex.Message;
+            _lblInfo.Text = L.T("読み込みに失敗しました: ", "Failed to load: ") + ex.Message;
             return;
         }
 
         if (!info.HasVideo || info.Duration <= 0)
         {
-            MessageBox.Show(this, "動画として読み込めませんでした。\n" + path, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            _lblInfo.Text = "動画として読み込めませんでした。";
+            MessageBox.Show(this, L.T("動画として読み込めませんでした。\n", "Could not read this file as a video.\n") + path, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            _lblInfo.Text = L.T("動画として読み込めませんでした。", "Could not read this file as a video.");
             return;
         }
 
@@ -423,11 +428,12 @@ public sealed class MainForm : Form
         _inputPath = path;
         _txtInput.Text = path;
         long bytes = new FileInfo(path).Length;
-        _lblInfo.Text = $"長さ {FormatTime(info.Duration)}　{info.Width}×{info.Height}" +
-                        (info.Fps > 0 ? $"　{info.Fps:0.##} fps" : "") +
-                        $"　{info.VideoCodec}" + (info.HasAudio ? "" : "（音声なし）") +
-                        (info.BitrateKbps > 0 ? $"　{info.BitrateKbps} kbps" : "") +
-                        $"　{FormatSize(bytes)}";
+        var sep = L.Sep;
+        _lblInfo.Text = L.T("長さ ", "Duration ") + FormatTime(info.Duration) + sep + $"{info.Width}×{info.Height}" +
+                        (info.Fps > 0 ? $"{sep}{info.Fps:0.##} fps" : "") +
+                        sep + info.VideoCodec + (info.HasAudio ? "" : L.T("（音声なし）", " (no audio)")) +
+                        (info.BitrateKbps > 0 ? $"{sep}{info.BitrateKbps} kbps" : "") +
+                        sep + FormatSize(bytes);
 
         int max = Math.Max(1, (int)Math.Floor(info.Duration * TicksPerSecond));
         _syncing = true;
@@ -458,10 +464,10 @@ public sealed class MainForm : Form
     private async Task ShowSourceInPlayerAsync(double seekTo)
     {
         _sampleMode = false;
-        _lblPlayer.Text = _proxyFile is not null ? "プレビュー用に変換した動画を表示中（書き出しは元の動画から行います）" : "";
+        _lblPlayer.Text = _proxyFile is not null ? L.T("プレビュー用に変換した動画を表示中（書き出しは元の動画から行います）", "Showing a preview copy (export uses the original video)") : "";
         UpdatePlayerButtons();
         if (_proxyFile is not null) await _player.LoadWorkFileAsync(_proxyFile, seekTo, autoplay: false);
-        else if (_proxyBuilding) await _player.ShowMessageAsync("プレビュー用に変換中です...");
+        else if (_proxyBuilding) await _player.ShowMessageAsync(L.T("プレビュー用に変換中です...", "Converting for preview..."));
         else if (_inputPath.Length > 0) await _player.LoadSourceAsync(_inputPath, seekTo);
     }
 
@@ -472,15 +478,15 @@ public sealed class MainForm : Form
         if (_info is null) return;
         if (_sampleMode)
         {
-            _lblPlayer.Text = "圧縮プレビューを再生できません（H.265 はこの PC で再生できない場合があります）";
-            await _player.ShowMessageAsync("この圧縮プレビューは再生できません。\nコーデックを H.264 にすると確認できます。");
+            _lblPlayer.Text = L.T("圧縮プレビューを再生できません（H.265 はこの PC で再生できない場合があります）", "Cannot play the compressed preview (this PC may not support H.265 playback)");
+            await _player.ShowMessageAsync(L.T("この圧縮プレビューは再生できません。\nコーデックを H.264 にすると確認できます。", "This compressed preview cannot be played.\nSwitch the codec to H.264 to check it."));
             return;
         }
         if (_proxyFile is not null || _proxyBuilding)
         {
             // 変換済みの動画でも再生できなかった
             if (_proxyFile is not null)
-                await _player.ShowMessageAsync("プレビュー再生できませんでした。\n書き出しはそのまま行えます。\n(" + detail + ")");
+                await _player.ShowMessageAsync(L.T("プレビュー再生できませんでした。\n書き出しはそのまま行えます。\n(", "Preview playback failed.\nYou can still export.\n(") + detail + ")");
             return;
         }
         await BuildProxyAsync();
@@ -524,7 +530,8 @@ public sealed class MainForm : Form
             "-progress", "pipe:1", "-nostats", outPath,
         };
 
-        string msg = "この動画（" + info.VideoCodec + "）はそのままではプレビューできないため、プレビュー用に変換しています...";
+        string msg = L.T($"この動画（{info.VideoCodec}）はそのままではプレビューできないため、プレビュー用に変換しています...",
+                         $"This video ({info.VideoCodec}) cannot be previewed directly, so a preview copy is being made...");
         _lblPlayer.Text = msg;
         await _player.ShowMessageAsync(msg);
 
@@ -541,7 +548,8 @@ public sealed class MainForm : Form
                     BeginInvoke(() =>
                     {
                         if (_proxyCts != cts) return;
-                        _lblPlayer.Text = $"プレビュー用に変換中... {pct:0}%（変換中もトリム設定・書き出しは行えます）";
+                        _lblPlayer.Text = L.T($"プレビュー用に変換中... {pct:0}%（変換中もトリム設定・書き出しは行えます）",
+                                              $"Converting for preview... {pct:0}% (you can keep trimming or export meanwhile)");
                     });
                 }
                 catch (InvalidOperationException) { }
@@ -564,8 +572,8 @@ public sealed class MainForm : Form
         if (exit != 0 || !File.Exists(outPath))
         {
             TryDelete(outPath);
-            _lblPlayer.Text = "プレビュー用の変換に失敗しました（書き出しは行えます）";
-            await _player.ShowMessageAsync("プレビュー用の変換に失敗しました。\n書き出しはそのまま行えます。\n" + LastErrorLines(err));
+            _lblPlayer.Text = L.T("プレビュー用の変換に失敗しました（書き出しは行えます）", "Preview conversion failed (you can still export)");
+            await _player.ShowMessageAsync(L.T("プレビュー用の変換に失敗しました。\n書き出しはそのまま行えます。\n", "Preview conversion failed.\nYou can still export.\n") + LastErrorLines(err));
             return;
         }
 
@@ -668,10 +676,11 @@ public sealed class MainForm : Form
         _syncing = false;
         _txtStart.Text = FormatTime(_start);
         _txtEnd.Text = FormatTime(_end);
-        _lblPicStart.Text = $"開始位置  {FormatTime(_start)}";
-        _lblPicEnd.Text = $"終了位置  {FormatTime(_end)}";
+        _lblPicStart.Text = L.T("開始位置  ", "Start  ") + FormatTime(_start);
+        _lblPicEnd.Text = L.T("終了位置  ", "End  ") + FormatTime(_end);
         if (_info is not null)
-            _lblLength.Text = $"切り出す長さ: {FormatTime(_end - _start)}（元の長さ {FormatTime(_info.Duration)}）";
+            _lblLength.Text = L.T($"切り出す長さ: {FormatTime(_end - _start)}（元の長さ {FormatTime(_info.Duration)}）",
+                                  $"Clip length: {FormatTime(_end - _start)} (original {FormatTime(_info.Duration)})");
         UpdateTargetInfo();
     }
 
@@ -739,7 +748,8 @@ public sealed class MainForm : Form
         if (!_rdoTarget.Checked || _info is null) { _lblTargetInfo.Text = ""; return; }
         var s = CollectSettings();
         int vk = ArgumentBuilder.VideoKbpsForTarget(s, _info);
-        _lblTargetInfo.Text = $"→ 映像 約 {vk} kbps" + (vk < 150 ? "（かなり粗くなります。解像度を下げるのがおすすめ）" : "");
+        _lblTargetInfo.Text = L.T($"→ 映像 約 {vk} kbps", $"→ video ≈ {vk} kbps") +
+                              (vk < 150 ? L.T("（かなり粗くなります。解像度を下げるのがおすすめ）", " (very low quality; try a lower resolution)") : "");
     }
 
     private EncodeSettings CollectSettings() => new()
@@ -767,7 +777,7 @@ public sealed class MainForm : Form
 
         if (s.Output.Length == 0)
         {
-            MessageBox.Show(this, "保存先を指定してください。", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, L.T("保存先を指定してください。", "Please choose where to save the file."), Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
         if (!s.Output.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) s.Output += ".mp4";
@@ -779,23 +789,23 @@ public sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, "保存先のパスが正しくありません。\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, L.T("保存先のパスが正しくありません。\n", "The save path is invalid.\n") + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
         if (string.Equals(fullOut, fullIn, StringComparison.OrdinalIgnoreCase))
         {
-            MessageBox.Show(this, "元の動画と同じファイルには書き出せません。別の名前を指定してください。", Text,
+            MessageBox.Show(this, L.T("元の動画と同じファイルには書き出せません。別の名前を指定してください。", "You cannot overwrite the source video. Please choose a different name."), Text,
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
         var outDir = Path.GetDirectoryName(fullOut);
         if (string.IsNullOrEmpty(outDir) || !Directory.Exists(outDir))
         {
-            MessageBox.Show(this, "保存先のフォルダーが存在しません。\n" + outDir, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, L.T("保存先のフォルダーが存在しません。\n", "The destination folder does not exist.\n") + outDir, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
         if (File.Exists(fullOut) &&
-            MessageBox.Show(this, $"{Path.GetFileName(fullOut)} は既にあります。上書きしますか？", Text,
+            MessageBox.Show(this, L.T($"{Path.GetFileName(fullOut)} は既にあります。上書きしますか？", $"{Path.GetFileName(fullOut)} already exists. Overwrite it?"), Text,
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
             return;
 
@@ -812,12 +822,12 @@ public sealed class MainForm : Form
             _progress.Value = 0;
             if (canceled)
             {
-                _lblStatus.Text = "中止しました";
+                _lblStatus.Text = L.T("中止しました", "Canceled");
             }
             else
             {
-                _lblStatus.Text = "失敗しました";
-                MessageBox.Show(this, "書き出しに失敗しました。\n\n" + LastErrorLines(err), Text,
+                _lblStatus.Text = L.T("失敗しました", "Failed");
+                MessageBox.Show(this, L.T("書き出しに失敗しました。\n\n", "Export failed.\n\n") + LastErrorLines(err), Text,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             return;
@@ -827,16 +837,19 @@ public sealed class MainForm : Form
         long inBytes = new FileInfo(fullIn).Length;
         long outBytes = File.Exists(fullOut) ? new FileInfo(fullOut).Length : 0;
         double ratio = inBytes > 0 ? outBytes * 100.0 / inBytes : 0;
-        _lblStatus.Text = $"完了  {FormatSize(outBytes)}";
+        _lblStatus.Text = L.T("完了  ", "Done  ") + FormatSize(outBytes);
 
-        var msg = $"書き出しが完了しました。\n\n{fullOut}\n\n元の動画: {FormatSize(inBytes)}\n書き出し: {FormatSize(outBytes)}（元の {ratio:0.#}%）";
+        var msg = L.T(
+            $"書き出しが完了しました。\n\n{fullOut}\n\n元の動画: {FormatSize(inBytes)}\n書き出し: {FormatSize(outBytes)}（元の {ratio:0.#}%）",
+            $"Export finished.\n\n{fullOut}\n\nOriginal: {FormatSize(inBytes)}\nExported: {FormatSize(outBytes)} ({ratio:0.#}% of the original)");
         var icon = MessageBoxIcon.Information;
         if (outBytes >= inBytes)
         {
-            msg += "\n\n※ 元の動画より大きくなりました。画質を「かなり小さく」にするか、解像度を下げてください。";
+            msg += L.T("\n\n※ 元の動画より大きくなりました。画質を「かなり小さく」にするか、解像度を下げてください。",
+                       "\n\nNote: the result is larger than the original. Choose \"Much smaller\" quality or a lower resolution.");
             icon = MessageBoxIcon.Warning;
         }
-        msg += "\n\n保存先のフォルダーを開きますか？";
+        msg += L.T("\n\n保存先のフォルダーを開きますか？", "\n\nOpen the destination folder?");
         if (MessageBox.Show(this, msg, Text, MessageBoxButtons.YesNo, icon) == DialogResult.Yes)
         {
             try { System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{fullOut}\""); } catch { }
@@ -901,7 +914,7 @@ public sealed class MainForm : Form
         if (_info is null || _busy) return;
         if (!_player.IsReady)
         {
-            MessageBox.Show(this, "プレーヤーが使えないため、圧縮プレビューを再生できません。", Text,
+            MessageBox.Show(this, L.T("プレーヤーが使えないため、圧縮プレビューを再生できません。", "The player is unavailable, so the compressed preview cannot be played."), Text,
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
@@ -925,9 +938,9 @@ public sealed class MainForm : Form
         {
             TryDelete(s.Output);
             _progress.Value = 0;
-            _lblStatus.Text = canceled ? "中止しました" : "プレビュー作成に失敗しました";
+            _lblStatus.Text = canceled ? L.T("中止しました", "Canceled") : L.T("プレビュー作成に失敗しました", "Preview failed");
             if (!canceled)
-                MessageBox.Show(this, "圧縮プレビューを作れませんでした。\n\n" + LastErrorLines(err), Text,
+                MessageBox.Show(this, L.T("圧縮プレビューを作れませんでした。\n\n", "Could not create the compressed preview.\n\n") + LastErrorLines(err), Text,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
@@ -937,12 +950,13 @@ public sealed class MainForm : Form
         double estimate = full.Mode == SizeMode.TargetSize
             ? full.TargetMB * 1024 * 1024
             : bytes * (full.Length / Math.Max(0.1, sampleLen));
-        _lblStatus.Text = "プレビュー作成完了";
+        _lblStatus.Text = L.T("プレビュー作成完了", "Preview ready");
 
         _sampleMode = true;
         UpdatePlayerButtons();
-        _lblPlayer.Text = $"圧縮プレビュー再生中（{sampleLen:0.#}秒 {FormatSize(bytes)}）→ 全体の推定 約 {FormatSize((long)estimate)}";
-        if (full.Hevc) _lblPlayer.Text += "　※H.265 は環境によって再生できません";
+        _lblPlayer.Text = L.T($"圧縮プレビュー再生中（{sampleLen:0.#}秒 {FormatSize(bytes)}）→ 全体の推定 約 {FormatSize((long)estimate)}",
+                              $"Playing compressed preview ({sampleLen:0.#}s, {FormatSize(bytes)}) → estimated total ≈ {FormatSize((long)estimate)}");
+        if (full.Hevc) _lblPlayer.Text += L.T("　※H.265 は環境によって再生できません", "   * H.265 may not play on some PCs");
         await _player.LoadWorkFileAsync(fileName, 0, autoplay: true);
     }
 
@@ -991,7 +1005,7 @@ public sealed class MainForm : Form
     private static string LastErrorLines(string err)
     {
         var lines = err.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        return lines.Length == 0 ? "（詳細不明）" : string.Join("\n", lines.TakeLast(5));
+        return lines.Length == 0 ? L.T("（詳細不明）", "(no details)") : string.Join("\n", lines.TakeLast(5));
     }
 
     // ---------------- 書式 ----------------
